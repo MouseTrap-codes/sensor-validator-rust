@@ -1,6 +1,10 @@
-use std::f32::consts::E;
-
 fn main() {
+    let test_temperature: f64 = 89.6;
+    match validate_temperature(test_temperature) {
+        Ok(()) => println!("Valid temperature"),
+        Err(e) => println!("{}", e),
+    }
+
     let test_temperature: f64 = 89.6;
     match validate_temperature(test_temperature) {
         Ok(()) => println!("Valid temperature"),
@@ -63,7 +67,7 @@ mod tests {
     }
 
     // validate_pressure tests
-
+    #[test]
     fn test_valid_pressure() {
         let result = validate_pressure(50.0);
         assert!(result.is_ok());
