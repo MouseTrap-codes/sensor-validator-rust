@@ -1,36 +1,73 @@
+#[derive(PartialEq)]
+enum SensorType {
+    Temperature,
+    Pressure,
+}
+
+
+struct Sensor {
+    sensor_type: SensorType,
+    value: f64,
+    timestamp: u64,
+}
+
+impl Sensor {
+    fn validate_temperature(&self) -> Result<(), &'static str> {
+        if self.sensor_type != SensorType::Temperature {
+            Err("NOT A TEMPERATURE SENSOR")
+        } else {
+            let temperature = self.value;
+            if temperature < 0.0 {
+                Err("INVALID TEMPERATURE: TOO LOW")
+            } else if temperature > 100.0 {
+                Err("INVALID TEMPERATURE: TOO HIGH")
+            } else {
+                Ok(())
+            }
+        }
+    }
+
+     fn validate_pressure(&self) -> Result<(), &'static str> {
+        if self.sensor_type != SensorType::Pressure {
+            Err("NOT A PRESSURE SENSOR")
+        } else {
+            let temperature = self.value;
+            if temperature < 900.0 {
+                Err("INVALID PRESSURE: TOO LOW")
+            } else if temperature > 1100.0 {
+                Err("INVALID PRESSURE: TOO HIGH")
+            } else {
+                Ok(())
+            }
+        }
+    }
+}
+
+
 fn main() {
-    let test_temperature: f64 = 89.6;
-    match validate_temperature(test_temperature) {
+    let temp_sensor = Sensor {
+        sensor_type: SensorType::Temperature,
+        value: 100.0,
+        timestamp: 100000,
+    };
+
+     let pressure_sensor = Sensor {
+        sensor_type: SensorType::Pressure,
+        value: 100.0,
+        timestamp: 100000,
+    };
+
+    match temp_sensor.validate_temperature() {
         Ok(()) => println!("Valid temperature"),
         Err(e) => println!("{}", e),
     }
 
-    let test_temperature: f64 = 89.6;
-    match validate_temperature(test_temperature) {
-        Ok(()) => println!("Valid temperature"),
+    match pressure_sensor.validate_pressure() {
+        Ok(()) => println!("Valid pressure"),
         Err(e) => println!("{}", e),
     }
 }
 
-fn validate_temperature(temperature: f64) -> Result<(), &'static str> {
-    if temperature < 0.0 {
-        Err("INVALID TEMPERATURE: TOO LOW")
-    } else if temperature > 100.0 {
-        Err("INVALID TEMPERATURE: TOO HIGH")
-    } else {
-        Ok(())
-    }
-}
-
-fn validate_pressure(pressure: f64) -> Result<(), &'static str> {
-    if pressure < 900.0 {
-        Err("INVALID PRESSURE: TOO LOW")
-    } else if pressure > 1100.0 {
-        Err("INVALID PRESSURE: TOO HIGH")
-    } else {
-        Ok(())
-    }
-}
 
 #[cfg(test)]
 mod tests {
