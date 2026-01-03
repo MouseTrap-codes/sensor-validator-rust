@@ -1,10 +1,13 @@
-enum SensorType {
+use crate::read_csv::DataLine;
+
+#[derive(Debug, PartialEq)]
+pub enum SensorType {
     Temperature(f64),
     Pressure(f64),
 }
 
-
-struct Sensor {
+#[derive(Debug)]
+pub struct Sensor {
     sensor_data: SensorType,
     timestamp: u64,
 }
@@ -35,6 +38,28 @@ impl Sensor {
         }
     }  
 }
+
+impl TryFrom<DataLine> for Sensor {
+    type Error = String;
+
+    fn try_from(line: DataLine) -> Result<Self, Self::Error> {
+        let sensor_data = match line.sensor_type.to_lowercase().as_str() {
+            "temperature" => SensorType::Temperature(line.value),
+            "pressure" => SensorType::Pressure(line.value),
+            _ => return Err(format!("Unknown sensor type: {}", line.sensor_type))
+        };
+
+        let sensor = Sensor {
+            sensor_data,
+            timestamp: line.timestamp as u64
+        };
+
+        sensor.validate().map_err(|e| e.to_string())?;
+
+        Ok(sensor)
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -129,6 +154,38 @@ mod tests {
         assert!(sensor_temp_higher.validate().is_ok());
         assert!(sensor_pressure_lower.validate().is_ok());
         assert!(sensor_pressure_lower.validate().is_ok());
+    }
+
+    // test tryFrom
+    #[test]
+    fn test_tryFrom_success() {
+        let line = DataLine {
+            sensor_type: String::from("temperature"),
+            value: 50.0,
+            timestamp: 000
+        };
+
+        let sensor = Sensor::try_from(line).unwrap();
+
+        let expected = Sensor {
+            sensor_data: SensorType::Temperature(50.0),
+            timestamp: 000,
+        };
+
+        assert_eq!(sensor.sensor_data, expected.sensor_data);
+    }
+
+     #[test]
+    fn test_tryFrom_failure() {
+        let line = DataLine {
+            sensor_type: String::from("nonchalant"),
+            value: 50.0,
+            timestamp: 000
+        };
+
+        let err = Sensor::try_from(line).unwrap_err();
+
+        assert_eq!(err, "Unknown sensor type: nonchalant");
     }
 
 
