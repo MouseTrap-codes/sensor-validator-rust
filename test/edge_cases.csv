@@ -1,0 +1,5 @@
+sensor_type,value,timestamp
+temperature,,1704286000
+pressure,not_a_number,1704286001
+humidity,50.0,1704286002
+ ,25.0,1704286003

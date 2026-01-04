@@ -1,0 +1,5 @@
+sensor_type,value,timestamp
+temperature,25.0,1704285000
+pressure,1000.0
+temperature,25.0,1704285002,extra_column
+1704285003,25.0,temperature

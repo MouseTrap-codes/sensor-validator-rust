@@ -1,0 +1,5 @@
+sensor_type,value,timestamp
+temperature,22.5,1704283200
+PRESSURE,1015.0,1704283201
+Temperature,15.0,1704283202
+pressure,950.0,1704283203
