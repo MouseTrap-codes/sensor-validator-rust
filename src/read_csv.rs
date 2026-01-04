@@ -45,6 +45,14 @@ impl ValidationResult {
     }
 }
 
+/// Reads and validates sensor data from any source implementing [std::io::Read].
+/// 
+/// This is the core logic of the library. It processes data line-by-line:
+/// - **Temperature** must be between 0.0 and 100.0.
+/// - **Pressure** must be between 900.0 and 1100.0.
+/// 
+/// # Errors
+/// Returns a [`Box<dyn Error>`] if the CSV source is inaccessible or completely unreadable.
 pub fn read_data_lines<R: Read>(reader: R) -> Result<ValidationResult, Box<dyn Error>> {
     let mut rdr = csv::Reader::from_reader(reader);
     let mut result = ValidationResult::new();
@@ -96,10 +104,10 @@ pressure,1013.0,2000";
 
     #[test]
     fn test_mixed_data_quality() {
-        // Line 2: Valid
-        // Line 3: Invalid Value (Temp too high)
-        // Line 4: Invalid Format (Missing columns)
-        // Line 5: Invalid Type (Unknown sensor)
+        // line 2: Valid
+        // line 3: Invalid Value (Temp too high)
+        // line 4: Invalid Format (Missing columns)
+        // line 5: Invalid Type (Unknown sensor)
         let data = "sensor_type,value,timestamp
 temperature,25.0,1000
 temperature,500.0,2000

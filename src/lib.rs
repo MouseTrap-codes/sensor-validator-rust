@@ -6,6 +6,10 @@ use std::{error::Error, fs::File};
 pub use read_csv::{ValidationError, ValidationResult, read_data_lines};
 pub use sensor::{Sensor, SensorType};
 
+/// The high-level runner for the validation logic.
+/// 
+/// This function coordinates opening the file, delegating to the CSV parser,
+/// and reporting the final success rate and error log to the console.
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let file = File::open(&config.file_path)?;
 
@@ -24,11 +28,18 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// Configuration for the sensor validation application.
+/// 
+/// Holds the necessary metadata to locate and process the input data.
 pub struct Config {
     pub file_path: String,
 }
 
 impl Config {
+    /// Parses command-line arguments into a [Config] instance.
+    /// 
+    /// # Errors
+    /// Returns an error string if the user fails to provide a file path.
     pub fn build(args: &[String]) -> Result<Config, &'static str> {
         if args.len() < 2 {
             return Err("Usage: cargo run <file_path>");
