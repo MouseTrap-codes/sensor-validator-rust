@@ -1,6 +1,6 @@
 use std::{error::Error, io::Read};
 
-use crate::sensor::{Sensor, SensorType};
+use crate::sensor::Sensor;
 
 #[derive(Debug, serde::Deserialize)]
 pub struct DataLine {
@@ -9,7 +9,7 @@ pub struct DataLine {
     pub timestamp: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ValidationResult {
     pub valid_sensors: Vec<Sensor>,
     pub errors: Vec<ValidationError>,
@@ -23,10 +23,7 @@ pub struct ValidationError {
 
 impl ValidationResult {
     pub fn new() -> Self {
-        Self {
-            valid_sensors: Vec::new(),
-            errors: Vec::new(),
-        }
+        Self::default()
     }
 
     pub fn summary(&self) -> String {
@@ -41,35 +38,38 @@ impl ValidationResult {
     pub fn success_rate(&self) -> f64 {
         let total = self.valid_sensors.len() + self.errors.len();
         if total == 0 {
-            return 0.0
+            return 0.0;
         }
 
         (self.valid_sensors.len() as f64 / total as f64) * 100.0
     }
 }
 
-
 pub fn read_data_lines<R: Read>(reader: R) -> Result<ValidationResult, Box<dyn Error>> {
     let mut rdr = csv::Reader::from_reader(reader);
     let mut result = ValidationResult::new();
 
-    for (i, record_result)  in rdr.deserialize::<DataLine>().enumerate() {
+    for (i, record_result) in rdr.deserialize::<DataLine>().enumerate() {
         let line_number = i + 2;
 
         match record_result {
-            Ok(record) => {
-                match Sensor::try_from(record) {
-                    Ok(sensor) => result.valid_sensors.push(sensor),
-                    Err(e) => {
-                        eprintln!("Line {}: {}", line_number, e);
-                        result.errors.push(ValidationError { line_number, error_message: e });
-                    }
+            Ok(record) => match Sensor::try_from(record) {
+                Ok(sensor) => result.valid_sensors.push(sensor),
+                Err(e) => {
+                    eprintln!("Line {}: {}", line_number, e);
+                    result.errors.push(ValidationError {
+                        line_number,
+                        error_message: e,
+                    });
                 }
-            }
+            },
             Err(e) => {
                 let err_msg = format!("CSV parse error: {}", e);
                 eprintln!("{}: {}", line_number, err_msg);
-                result.errors.push(ValidationError { line_number, error_message: err_msg });
+                result.errors.push(ValidationError {
+                    line_number,
+                    error_message: err_msg,
+                });
             }
         }
     }
@@ -108,9 +108,13 @@ unknown,10.0,4000";
 
         let result = read_data_lines(data.as_bytes()).unwrap();
 
-        assert_eq!(result.valid_sensors.len(), 1, "Should only have 1 valid sensor");
+        assert_eq!(
+            result.valid_sensors.len(),
+            1,
+            "Should only have 1 valid sensor"
+        );
         assert_eq!(result.errors.len(), 3, "Should have 3 errors recorded");
-        
+
         // verify line numbers are accurate
         assert_eq!(result.errors[0].line_number, 3); // logic error
         assert_eq!(result.errors[1].line_number, 4); // parse error
@@ -131,7 +135,7 @@ unknown,10.0,4000";
         // serde will fail here because column names don't match
         let data = "type,val,time
 temperature,25.0,1000";
-        
+
         let result = read_data_lines(data.as_bytes()).unwrap();
         assert!(result.errors.len() > 0);
         assert_eq!(result.valid_sensors.len(), 0);

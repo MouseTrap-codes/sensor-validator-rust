@@ -1,12 +1,12 @@
-pub mod sensor;
 pub mod read_csv;
+pub mod sensor;
 
-use std::{fs::File, error::Error};
+use std::{error::Error, fs::File};
 
-pub use read_csv::{read_data_lines, ValidationResult, ValidationError};
+pub use read_csv::{ValidationError, ValidationResult, read_data_lines};
 pub use sensor::{Sensor, SensorType};
 
-pub fn run(config: Config) -> Result<(), Box<dyn Error>>{
+pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let file = File::open(&config.file_path)?;
 
     let results = read_csv::read_data_lines(file)?;
